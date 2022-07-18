@@ -1,0 +1,10 @@
+#------------DATASET CONFIG-------------
+DATASET:
+    NAME: "COCO"
+    DATASET_PATH : '/data/yangqi/dataset/COCO/'  
+    #MEAN: [0.485, 0.456, 0.406]
+    #STD: [0.229, 0.224, 0.225]
+    NUM_CLASSES: 81  # Num classes = objects + background
+    
+    # gets home dir cross platform
+    
