@@ -2,11 +2,11 @@
 import os 
 import sys 
 import torch
-import cv2
 import yaml
 import numpy as np
 import torch.utils.data as data
-
+from PIL import Image
+COCO_ROOT ='COCO'
 IMAGES = 'images'
 ANNOTATIONS = 'annotations'
 COCO_API = 'PythonAPI'
@@ -40,6 +40,7 @@ def get_label_map(label_file):
         label_map[int(ids[0])] = int(ids[1])
     return label_map
 
+
 class COCOAnnotationTransform():
     """
     Transforms a COCO annotation into a Tensor of bbox coords and label index.
@@ -66,13 +67,12 @@ class COCOAnnotationTransform():
                 bbox[3] += bbox[1]
                 label_idx = self.label_map[obj['category_id']] - 1
                 final_box = list(np.array(bbox)/scale)
-                final_box.append(label_idx)
-                res += [final_box]  # [xmin, ymin, xmax, ymax, label_idx]
+                final_box.append(label_idx)  #ltrb styel(left top right bottom)
+                res += [final_box]  # [xmin, ymin, xmax, ymax, label_idx] ltrb
             else:
                 print("no bbox problem!")
 
-        return res  # [[xmin, ymin, xmax, ymax, label_idx], ... ]
-
+        return res  # [[xmin, ymin, xmax, ymax, label_idx], ... ]  
 
 class COCODetection(data.Dataset):
     """`MS Coco Detection <http://mscoco.org/dataset/#detections-challenge2016>`_ Dataset.
@@ -108,12 +108,12 @@ class COCODetection(data.Dataset):
             tuple: Tuple (image, target).
                    target is the object returned by ``coco.loadAnns``.
         """
-        im, gt, h, w = self.pull_item(index)
+        img, boxes, labels, height, width, img_id = self.pull_item(index)
         if self.type == 'train' : 
-            return im, gt
+            return img, img_id, (height, width), boxes, labels   # gt : [xmin, ymin, xmax, ymax, label_idx]
         else : 
-            img_id = self.ids[index]
-            return  im, gt,img_id,h,w
+           
+            return  img, img_id, (height, width), boxes, labels
     def __len__(self):
         return len(self.ids)
 
@@ -132,34 +132,36 @@ class COCODetection(data.Dataset):
         target = self.coco.loadAnns(ann_ids)
         path = os.path.join(self.root, self.coco.loadImgs(img_id)[0]['file_name'])
         assert os.path.exists(path), 'Image path does not exist: {}'.format(path)
-        img = cv2.imread(os.path.join(self.root, path))
-        height, width, _ = img.shape
+        #img = cv2.imread(os.path.join(self.root, path))
+        img = Image.open(os.path.join(self.root, path)).convert("RGB")
+        height, width = img.size
+
         if self.target_transform is not None:
             target = self.target_transform(target, width, height)
-        if self.transform is not None:
-            target = np.array(target)
-            img, boxes, labels = self.transform(img, target[:, :4],
-                                                target[:, 4])
-            # to rgb
-            img = img[:, :, (2, 1, 0)]
-
+            target = torch.tensor(target, dtype=torch.float)
+            boxes = target[:, :4].float()
+            labels = target[:, 4].long()
+        if self.transform is not None:    
+            img, (height, width), boxes, labels = \
+                self.transform(img, (height, width), boxes, labels)
+                
             target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
-        return torch.from_numpy(img).permute(2, 0, 1), target, height, width
-        #target : [[xmin, ymin, xmax, ymax, label_idx], ... ]
-    def pull_image(self, index):
-        '''Returns the original image object at index in PIL form
+        return img, boxes, labels, height, width, img_id
+        #target : [[xmin, ymin, xmax, ymax(ltrb), label_idx], ... ]
+    # def pull_image(self, index):
+    #     '''Returns the original image object at index in PIL form
 
-        Note: not using self.__getitem__(), as any transformations passed in
-        could mess up this functionality.
+    #     Note: not using self.__getitem__(), as any transformations passed in
+    #     could mess up this functionality.
 
-        Argument:
-            index (int): index of img to show
-        Return:
-            cv2 img
-        '''
-        img_id = self.ids[index]
-        path = self.coco.loadImgs(img_id)[0]['file_name']
-        return cv2.imread(os.path.join(self.root, path), cv2.IMREAD_COLOR)
+    #     Argument:
+    #         index (int): index of img to show
+    #     Return:
+    #         cv2 img
+    #     '''
+    #     img_id = self.ids[index]
+    #     path = self.coco.loadImgs(img_id)[0]['file_name']
+    #     return cv2.imread(os.path.join(self.root, path), cv2.IMREAD_COLOR)
 
     def pull_anno(self, index):
         '''Returns the original annotation of image at index
@@ -188,7 +190,23 @@ class COCODetection(data.Dataset):
         fmt_str += '{0}{1}'.format(tmp, self.target_transform.__repr__().replace('\n', '\n' + ' ' * len(tmp)))
         return fmt_str
 
+    @staticmethod
+    def collate_fn(batch):
+        """If in SSD model, it is useless."""
+        images, targets = tuple(zip(*batch))
+        images = torch.stack(images, dim=0)
         
+        boxes = []
+        labels = []
+        img_id = []
+        for t in targets:
+            boxes.append(t['boxes'])
+            labels.append(t['labels'])
+            img_id.append(t["image_id"])
+        targets = {"boxes": torch.stack(boxes, dim=0),
+                   "labels": torch.stack(labels, dim=0),
+                   "image_id": torch.as_tensor(img_id)}
+        return images, targets
 if __name__ == "__main__":
     
     #Load config
