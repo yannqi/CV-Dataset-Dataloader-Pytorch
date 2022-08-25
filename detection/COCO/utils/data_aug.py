@@ -4,7 +4,7 @@ from PIL import Image
 import random
 from data.utils.utils import Encoder,calc_iou_tensor
 
-# Do data augumentation  only for SSD. 
+# Do data augumentation  only for SSD. Can be 
 class SSDTransformer(object):
     """ SSD Data Augumentation, according to original paper
         Composed by several steps:
