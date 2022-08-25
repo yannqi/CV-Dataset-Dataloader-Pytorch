@@ -3,15 +3,28 @@
 # Introduction
 This repo is for convenient loading dataloader when create a new project in pytorch style. 
 The main Datasets include COCO ,VOC, ImageNet, CIFAR-10, and so on. 
-The main methods include Image Detection, Sementatic segmentation.
+The main methods include Object Detection, Sementatic segmentation.
 Keep updating.     
 
-# Use Method
-               
+**Object Detection:**
+
+- [x] COCO 
+- [ ] VOC
+- [x] Data Augmentation
+
+**Sementatic Segmentation:**
+- [x] COCO
+- [x] VOC               
+- [x] Data Augmentation
+
+**Others**
+- [ ] Data with DALI
 
 # COCO Dataloader
+include : Object Detection, Sementatic segmentation. 
 
-## Data Donwload Save Path
+(With data Aug.)
+## COCO Data Donwload Save Path
 ### Root Directory 
     └──  COCO 
         ├──images
@@ -31,3 +44,16 @@ Keep updating.
     Validation set annotation file corresponding to object detection and semantic 
 
 
+## VOC Dataloader
+
+## VOC Data Donwload Save Path
+
+### Root Directory 
+Actually, you only need to unzip/tar the download dataset, the dataset path will unzip as below:
+
+    └──  VOC2012
+        ├──SegmentationObject
+        ├──SegmentationClass   
+        ├──JPEGImages
+        ├──ImageSets
+        └──Annotations
