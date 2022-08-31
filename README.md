@@ -6,6 +6,10 @@ The main Datasets include COCO ,VOC, ImageNet, CIFAR-10, and so on.
 The main methods include Object Detection, Sementatic segmentation.
 Keep updating.     
 
+**Image Classification**
+- [x] ImageNet 1k
+    Download by Linux. [linux下载/解压ImageNet-1k数据集](https://blog.csdn.net/qq_45588019/article/details/125642466)
+
 **Object Detection:**
 
 - [x] COCO 
