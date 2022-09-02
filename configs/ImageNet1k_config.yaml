@@ -1,0 +1,11 @@
+#------------DATASET CONFIG-------------
+
+NAME: "ImageNet1k"
+DATASET_PATH : '/data/yangqi/dataset/ImageNet1k/'  
+MEAN: [0.485, 0.456, 0.406]
+STD: [0.229, 0.224, 0.225]
+NUM_CLASSES: 1000 # Num classes = objects + background
+CROP_SIZE: 224  # 512
+
+# Train image: 1281167
+# Valid image: 50000
