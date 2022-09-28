@@ -10,6 +10,7 @@ Keep updating.
 - [x] ImageNet 1k
     Download by Linux. [linux下载/解压ImageNet-1k数据集](https://blog.csdn.net/qq_45588019/article/details/125642466)
     Thanks to [pytorch/examples/imgagenet](https://github.com/pytorch/examples/tree/main/imagenet)
+    
 **Object Detection:**
 
 - [x] COCO 

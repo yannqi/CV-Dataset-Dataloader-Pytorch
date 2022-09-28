@@ -108,7 +108,7 @@ class COCODetection(data.Dataset):
             tuple: Tuple (image, target).
                    target is the object returned by ``coco.loadAnns``.
         """
-        img, boxes, labels, height, width, img_id = self.pull_item(index)
+        img, boxes, labels, width, height,  img_id = self.pull_item(index)
         if self.type == 'train' : 
             return img, img_id, (height, width), boxes, labels   # gt : [xmin, ymin, xmax, ymax, label_idx]
         else : 
@@ -134,7 +134,7 @@ class COCODetection(data.Dataset):
         assert os.path.exists(path), 'Image path does not exist: {}'.format(path)
         #img = cv2.imread(os.path.join(self.root, path))
         img = Image.open(os.path.join(self.root, path)).convert("RGB")
-        height, width = img.size
+        width, height = img.size
 
         if self.target_transform is not None:
             target = self.target_transform(target, width, height)
@@ -142,11 +142,11 @@ class COCODetection(data.Dataset):
             boxes = target[:, :4].float()
             labels = target[:, 4].long()
         if self.transform is not None:    
-            img, (height, width), boxes, labels = \
-                self.transform(img, (height, width), boxes, labels)
+            img, (width, height), boxes, labels = \
+                self.transform(img, (width,height), boxes, labels)
                 
             target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
-        return img, boxes, labels, height, width, img_id
+        return img, boxes, labels, width, height, img_id
         #target : [[xmin, ymin, xmax, ymax(ltrb), label_idx], ... ]
     # def pull_image(self, index):
     #     '''Returns the original image object at index in PIL form
