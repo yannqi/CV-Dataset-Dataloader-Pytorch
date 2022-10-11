@@ -24,7 +24,8 @@ Keep updating.
 
 **Others**
 - [ ] Data with DALI
-
+- [x] Downloader. The common datasets download methods. 
+ 
 # COCO Dataloader
 include : Object Detection, Sementatic segmentation. 
 
